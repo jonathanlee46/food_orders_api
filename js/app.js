@@ -13,22 +13,23 @@ Posts = Backbone.Collection.extend(
     {
         model: Post,
         // Url to request when fetch() is called
-        url: 'http://jl46.x10host.com/?json=1',
-        // parse: function(response) {
-        //     return response;
-        // },
-        // Overwrite the sync method to pass over the Same Origin Policy
-        // sync: function(method, model, options) {
-        //     var that = this;
-        //         var params = _.extend({
-        //             type: 'GET',
-        //             dataType: 'json',
-        //             url: that.url,
-        //             processData: false
-        //         }, options);
+        // url: 'http://jl46.x10host.com/?json=1',
+        url: 'http://enigmatic.x10host.com/?json=1',
+        parse: function(response) {
+            return response;
+        },
+        Overwrite the sync method to pass over the Same Origin Policy
+        sync: function(method, model, options) {
+            var that = this;
+                var params = _.extend({
+                    type: 'GET',
+                    dataType: 'json',
+                    url: that.url,
+                    processData: false
+                }, options);
 
-        //     return $.ajax(params);
-        // }
+            return $.ajax(params);
+        }
     });
 
 // Define the View
