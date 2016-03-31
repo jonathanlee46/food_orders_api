@@ -31,7 +31,7 @@ PostsView = Backbone.View.extend({
     initialize: function() {
         _.bindAll(this, 'render');
 
-        this.collection = new Posts;
+        this.collection = new Posts();
         var that = this;
         this.collection.fetch({
             success: function () {
