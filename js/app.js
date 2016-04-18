@@ -10,24 +10,35 @@ Order = Backbone.Model.extend({
     parse: function(response) {
         var postArray = response["posts"];
 
-        for (var i = 0; i< postArray.length-1; i++){
+        for (var i = 0; i< postArray.length; i++){
 
             //get wp post contents
             var newName = postArray[i]["title"];
-            console.log(newName);
+            // console.log(newName);
             var newFood = postArray[i]["content"];
-            console.log(newOrder);
+            // console.log(newOrder);
 
-            //remove p tag from the food
-
+            //remove p tag from the food string
             modFood = newFood.replace(/(<p[^>]+?>|<p>|<\/p>)/img, "");
 
             //create model instance and store to collection
             var newOrder = new Order({name: newName, food: modFood});
-            console.log(newOrder.get("name"));
+            // console.log(newOrder.get("name"));
 
             bill.add(newOrder);  //hardcoded collection to store
         }
+    },
+    getNonce: function(){
+        $.ajax({
+            url: 'http://jl46.x10host.com/api/get_nonce/?controller=posts&method=create_post',
+            type: 'GET',
+            data: {},
+            success: function (data) {
+                console.log(data["nonce"] + " from getNonce()");
+                return data["nonce"];
+            }
+        });
+        
     }
 });
 
@@ -50,6 +61,18 @@ PostsView = Backbone.View.extend({
                 that.render(); //call render function
             }
         });
+
+        //change for new inputs
+        this.model.on("change", this.render);
+
+        //form button
+        var inputName = $('#new-name');
+        var inputFood = $('#new-food');
+
+        //local form submit
+        $('.submit-new').click(function(){
+          that.inputRender(inputName.val(), inputFood.val(), that);
+        })
     },
 
     render: function() {
@@ -60,9 +83,17 @@ PostsView = Backbone.View.extend({
         for (var i = 0; i < bill.length; i++){
             var tempModel = bill.at(i);
             $("#post").append(tempModel.get("name") + " wants " + tempModel.get("food") + "<br>");
-
         }
+    },
+
+    inputRender: function(name, food, target){
+        console.log("inputRender firing");
+        $("#post").append(name + " wants " + food + "<br>");
+        var nonce = target.model.getNonce();
+        console.log(nonce + " from inputRender");
     }
+
+    
 });
 
 //instances
@@ -74,3 +105,5 @@ var app = new PostsView({
     collection: bill,
     el: $('body')
 });
+
+console.log("app.js end");
