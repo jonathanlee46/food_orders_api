@@ -18,8 +18,12 @@ Order = Backbone.Model.extend({
             var newFood = postArray[i]["content"];
             console.log(newOrder);
 
+            //remove p tag from the food
+
+            modFood = newFood.replace(/(<p[^>]+?>|<p>|<\/p>)/img, "");
+
             //create model instance and store to collection
-            var newOrder = new Order({name: newName, food: newFood});
+            var newOrder = new Order({name: newName, food: modFood});
             console.log(newOrder.get("name"));
 
             bill.add(newOrder);  //hardcoded collection to store
@@ -55,7 +59,8 @@ PostsView = Backbone.View.extend({
         //print contents to html
         for (var i = 0; i < bill.length; i++){
             var tempModel = bill.at(i);
-            $("#post").append(tempModel.get("food"));
+            $("#post").append(tempModel.get("name") + " wants " + tempModel.get("food") + "<br>");
+
         }
     }
 });
