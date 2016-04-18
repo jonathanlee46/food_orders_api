@@ -1,4 +1,4 @@
-// // Define the model
+// Define the model
 Order = Backbone.Model.extend({
     defaults:{
         name: 'Jack',
@@ -7,6 +7,7 @@ Order = Backbone.Model.extend({
 
     url: 'http://jl46.x10host.com/?json=1',
 
+    //parse JSON response and add models to collection
     parse: function(response) {
         var postArray = response["posts"];
 
@@ -28,6 +29,8 @@ Order = Backbone.Model.extend({
             bill.add(newOrder);  //hardcoded collection to store
         }
     },
+
+    //get nonce token to post to WP api
     getNonce: function(){
         $.ajax({
             url: 'http://jl46.x10host.com/api/get_nonce/?controller=posts&method=create_post',
@@ -39,7 +42,7 @@ Order = Backbone.Model.extend({
                 return nonce;
             }
         });
-        
+
     }
 });
 
@@ -47,7 +50,6 @@ Order = Backbone.Model.extend({
 OrderCollection = Backbone.Collection.extend({
     model: Order,
     url: 'http://jl46.x10host.com/?json=1',
-    
 })
 
 // Define the View
@@ -66,6 +68,7 @@ PostsView = Backbone.View.extend({
 
     //render orders to page
     render: function() {
+
         //test to see if collection populated
         console.log("number of orders on the bill is " + bill.length);
 
@@ -78,6 +81,7 @@ PostsView = Backbone.View.extend({
 
     //when the submit button is clicked:
     inputAction: function(){
+
         //collection listener to refresh posts
         this.collection.on('add', this.render);
 
@@ -95,12 +99,13 @@ PostsView = Backbone.View.extend({
         console.log("saving " + submitOrder.get("name") + ", " + submitOrder.get("food") + " to collection");
     }
 
-    
+
 });
 
-//instances
+//instances on load
 var bill = new OrderCollection();
 var initialOrder = new Order();
+
 var app = new PostsView({
     // define the el where the view will render
     model: initialOrder,
@@ -108,7 +113,10 @@ var app = new PostsView({
     el: $('body')
 });
 
+
+//event handling
 $('.submit-new').click(function(){
     app.inputAction();
 })
+
 console.log("app.js end");
