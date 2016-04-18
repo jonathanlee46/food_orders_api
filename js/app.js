@@ -34,8 +34,9 @@ Order = Backbone.Model.extend({
             type: 'GET',
             data: {},
             success: function (data) {
-                console.log(data["nonce"] + " from getNonce()");
-                return data["nonce"];
+                var nonce = data["nonce"]
+                console.log(nonce + " from getNonce()");
+                return nonce;
             }
         });
         
@@ -61,20 +62,9 @@ PostsView = Backbone.View.extend({
                 that.render(); //call render function
             }
         });
-
-        //change for new inputs
-        this.model.on("change", this.render);
-
-        //form button
-        var inputName = $('#new-name');
-        var inputFood = $('#new-food');
-
-        //local form submit
-        $('.submit-new').click(function(){
-          that.inputRender(inputName.val(), inputFood.val(), that);
-        })
     },
 
+    //render orders to page
     render: function() {
         //test to see if collection populated
         console.log("number of orders on the bill is " + bill.length);
@@ -86,11 +76,23 @@ PostsView = Backbone.View.extend({
         }
     },
 
-    inputRender: function(name, food, target){
-        console.log("inputRender firing");
-        $("#post").append(name + " wants " + food + "<br>");
-        var nonce = target.model.getNonce();
-        console.log(nonce + " from inputRender");
+    //when the submit button is clicked:
+    inputAction: function(){
+        //collection listener to refresh posts
+        this.collection.on('add', this.render);
+
+        //clear posts
+        $("#post").empty();
+
+        //target form button
+        var inputName = $('#new-name');
+        var inputFood = $('#new-food');
+
+        //create temp model and add to collection
+        var submitOrder = new Order({name: inputName.val(), food: inputFood.val()});
+        this.collection.add(submitOrder);
+
+        console.log("saving " + submitOrder.get("name") + ", " + submitOrder.get("food") + " to collection");
     }
 
     
@@ -98,12 +100,15 @@ PostsView = Backbone.View.extend({
 
 //instances
 var bill = new OrderCollection();
-var order = new Order();
+var initialOrder = new Order();
 var app = new PostsView({
     // define the el where the view will render
-    model: order,
+    model: initialOrder,
     collection: bill,
     el: $('body')
 });
 
+$('.submit-new').click(function(){
+    app.inputAction();
+})
 console.log("app.js end");
