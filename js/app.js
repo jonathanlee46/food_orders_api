@@ -64,6 +64,9 @@ PostsView = Backbone.View.extend({
                 that.render(); //call render function
             }
         });
+
+        //collection listener to refresh posts
+        // this.collection.on('add', this.renderNew());
     },
 
     //render orders to page
@@ -72,6 +75,9 @@ PostsView = Backbone.View.extend({
         //test to see if collection populated
         console.log("number of orders on the bill is " + bill.length);
 
+        //wipe the Loading... text
+        $("#post").empty();
+
         //print contents to html
         for (var i = 0; i < bill.length; i++){
             var tempModel = bill.at(i);
@@ -79,14 +85,13 @@ PostsView = Backbone.View.extend({
         }
     },
 
+    renderLast: function(){
+        var tempModel = bill.at(bill.length-1);
+        $("#post").append(tempModel.get("name") + " wants " + tempModel.get("food") + "<br>");
+    },
+
     //when the submit button is clicked:
-    inputAction: function(){
-
-        //collection listener to refresh posts
-        this.collection.on('add', this.render);
-
-        //clear posts
-        $("#post").empty();
+    submitAction: function(){
 
         //target form button
         var inputName = $('#new-name');
@@ -99,7 +104,7 @@ PostsView = Backbone.View.extend({
         console.log("saving " + submitOrder.get("name") + ", " + submitOrder.get("food") + " to collection");
     }
 
-
+    
 });
 
 //instances on load
@@ -116,7 +121,8 @@ var app = new PostsView({
 
 //event handling
 $('.submit-new').click(function(){
-    app.inputAction();
+    app.submitAction();
+    app.renderLast();
 })
 
 console.log("app.js end");
