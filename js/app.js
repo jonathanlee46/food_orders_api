@@ -5,45 +5,30 @@ Order = Backbone.Model.extend({
         food: 'Pizza'
     },
 
-    url: 'http://jl46.x10host.com/?json=1',
+    // url: 'http://jl46.x10host.com/?json=1',
+    url: 'http://jl46.x10host.com/wp-json/wp/v2/posts',
 
     //parse JSON response and add models to collection
     parse: function(response) {
-        var postArray = response["posts"];
+        var postArray = response;
+        console.log(postArray.length);
 
         for (var i = 0; i< postArray.length; i++){
 
             //get wp post contents
-            var newName = postArray[i]["title"];
-            // console.log(newName);
-            var newFood = postArray[i]["content"];
-            // console.log(newOrder);
+            var newName = postArray[i]["slug"];  //name
+            var newFood = postArray[i]["content"]["rendered"];  //order
 
             //remove p tag from the food string
-            modFood = newFood.replace(/(<p[^>]+?>|<p>|<\/p>)/img, "");
+            var modFood = newFood.replace(/(<p[^>]+?>|<p>|<\/p>)/img, "");
 
             //create model instance and store to collection
             var newOrder = new Order({name: newName, food: modFood});
-            // console.log(newOrder.get("name"));
 
             bill.add(newOrder);  //hardcoded collection to store
         }
     },
 
-    //get nonce token to post to WP api
-    getNonce: function(){
-        $.ajax({
-            url: 'http://jl46.x10host.com/api/get_nonce/?controller=posts&method=create_post',
-            type: 'GET',
-            data: {},
-            success: function (data) {
-                var nonce = data["nonce"]
-                console.log(nonce + " from getNonce()");
-                return nonce;
-            }
-        });
-
-    }
 });
 
 // Define the collection
@@ -64,9 +49,6 @@ PostsView = Backbone.View.extend({
                 that.render(); //call render function
             }
         });
-
-        //collection listener to refresh posts
-        // this.collection.on('add', this.renderNew());
     },
 
     //render orders to page
@@ -100,6 +82,22 @@ PostsView = Backbone.View.extend({
         //create temp model and add to collection
         var submitOrder = new Order({name: inputName.val(), food: inputFood.val()});
         this.collection.add(submitOrder);
+
+        //send model to WP POST
+        var appPass = btoa("jonathanlee46@gmail.com:Gf1Z Ad3L ht1t 8IMu");
+        console.log(appPass);
+        $.ajax({
+            url: 'http://jl46.x10host.com/wp-json/wp/v2/posts',
+            headers: {
+                'Authorization':'Basic am9uYXRoYW5sZWU0NkBnbWFpbC5jb206R2YxWiBBZDNMIGh0MXQgOElNdQ=='
+            },
+            type: 'POST',
+            data: {"title":inputName.val(), "content": inputFood.val()},
+                success: function (data) {
+                    //data
+                    console.log("neat");
+            }
+        });
 
         console.log("saving " + submitOrder.get("name") + ", " + submitOrder.get("food") + " to collection");
     }
