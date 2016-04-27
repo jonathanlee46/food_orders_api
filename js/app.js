@@ -1,8 +1,10 @@
 // Define the model
 Order = Backbone.Model.extend({
+    idAttribute:"_id", //id# accessor
+
     defaults:{
         name: 'Jack',
-        food: 'Pizza'
+        food: 'Pizza',
     },
 
     // url: 'http://jl46.x10host.com/?json=1',
@@ -12,18 +14,20 @@ Order = Backbone.Model.extend({
     parse: function(response) {
         var postArray = response;
         console.log(postArray.length);
+        var globalCounter = 0;
 
         for (var i = 0; i< postArray.length; i++){
 
             //get wp post contents
-            var newName = postArray[i]["slug"];  //name
+            var newName = postArray[i]["title"]["rendered"];  //name
             var newFood = postArray[i]["content"]["rendered"];  //order
 
             //remove p tag from the food string
             var modFood = newFood.replace(/(<p[^>]+?>|<p>|<\/p>)/img, "");
 
             //create model instance and store to collection
-            var newOrder = new Order({name: newName, food: modFood});
+            var newOrder = new Order({name: newName, food: modFood, id: globalCounter});
+            globalCounter++;
 
             bill.add(newOrder);  //hardcoded collection to store
         }
@@ -34,7 +38,7 @@ Order = Backbone.Model.extend({
 // Define the collection
 OrderCollection = Backbone.Collection.extend({
     model: Order,
-    url: 'http://jl46.x10host.com/?json=1',
+    // url: 'http://jl46.x10host.com/?json=1',
 })
 
 // Define the View
@@ -63,13 +67,28 @@ PostsView = Backbone.View.extend({
         //print contents to html
         for (var i = 0; i < bill.length; i++){
             var tempModel = bill.at(i);
-            $("#post").append(tempModel.get("name") + " wants " + tempModel.get("food") + "<br>");
+            console.log(tempModel.attributes);
+            $("#post").append("<div class='order' id=" + tempModel.get("id") + ">" + tempModel.get("name") + " wants " + tempModel.get("food") + "<button class='delete'>Delete</button></div><br>");
         }
     },
 
     renderLast: function(){
         var tempModel = bill.at(bill.length-1);
-        $("#post").append(tempModel.get("name") + " wants " + tempModel.get("food") + "<br>");
+        $("#post").append("<div class='order' id=" + tempModel.get("id") + ">" + tempModel.get("name") + " wants " + tempModel.get("food") + "<button class='delete'>Delete</button></div><br>");
+    },
+
+    refresh: function(){
+        //wipe the list
+        $("#post").empty();
+
+        //fetch list from backend and render
+        var that = this;
+        this.model.fetch({
+            success: function () {
+                console.log("fetching"); //proof of fetch
+                that.render(); //call render function
+            }
+        });
     },
 
     //when the submit button is clicked:
@@ -84,10 +103,8 @@ PostsView = Backbone.View.extend({
         this.collection.add(submitOrder);
 
         //send model to WP POST
-        var appPass = btoa("jonathanlee46@gmail.com:Gf1Z Ad3L ht1t 8IMu");
-        console.log(appPass);
         $.ajax({
-            url: 'http://jl46.x10host.com/wp-json/wp/v2/posts',
+            url: 'http://jl46.x10host.com/wp-json/wp/v2/posts?shortcode=user-submitted-posts',
             headers: {
                 'Authorization':'Basic am9uYXRoYW5sZWU0NkBnbWFpbC5jb206R2YxWiBBZDNMIGh0MXQgOElNdQ=='
             },
@@ -95,7 +112,7 @@ PostsView = Backbone.View.extend({
             data: {"title":inputName.val(), "content": inputFood.val()},
                 success: function (data) {
                     //data
-                    console.log("neat");
+                    console.log("Successfully posted to backend");
             }
         });
 
@@ -118,9 +135,24 @@ var app = new PostsView({
 
 
 //event handling
-$('.submit-new').click(function(){
+$('.submit-new').click(function(e){
+    e.preventDefault();
+
     app.submitAction();
     app.renderLast();
+})
+$('.refresh-list').click(function(e){
+    e.preventDefault();
+
+    bill.reset();
+    var newOrder = new Order();
+    app.model = newOrder;
+    app.render();
+})
+$('.order-board').on('click', '.delete', function(e){
+    e.preventDefault();
+    var divId = $(this).closest("div").attr("id");  
+    console.log("mouse! " + divId);
 })
 
 console.log("app.js end");
