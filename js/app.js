@@ -32,13 +32,17 @@ Order = Backbone.Model.extend({
             bill.add(newOrder);  //hardcoded collection to store
         }
     },
-
 });
 
 // Define the collection
 OrderCollection = Backbone.Collection.extend({
     model: Order,
-    // url: 'http://jl46.x10host.com/?json=1',
+    print: function(){
+        for (var i = 0; i < this.length; i++){
+            var tempModel = bill.at(i);
+            console.log(tempModel.get("name"));
+        }
+    },
 })
 
 // Define the View
@@ -117,7 +121,18 @@ PostsView = Backbone.View.extend({
         });
 
         console.log("saving " + submitOrder.get("name") + ", " + submitOrder.get("food") + " to collection");
-    }
+    },
+    removeOrder: function(id){
+        var orderId = id;
+        console.log("removing " + orderId);
+
+        //remove order from wordpress
+
+
+        //remove order model from collection
+        bill.remove(bill.at(orderId));
+        // bill.print();
+    },
 
     
 });
@@ -151,8 +166,13 @@ $('.refresh-list').click(function(e){
 })
 $('.order-board').on('click', '.delete', function(e){
     e.preventDefault();
+    
+    //remove the order from DOM
     var divId = $(this).closest("div").attr("id");  
-    console.log("mouse! " + divId);
+    $(this).closest("div").remove();
+
+    //remove the order from collection and backend
+    app.removeOrder(divId);
 })
 
 console.log("app.js end");
