@@ -21,12 +21,13 @@ Order = Backbone.Model.extend({
             //get wp post contents
             var newName = postArray[i]["title"]["rendered"];  //name
             var newFood = postArray[i]["content"]["rendered"];  //order
+            var postId  = postArray[i]["id"]; //WP post id
 
             //remove p tag from the food string
             var modFood = newFood.replace(/(<p[^>]+?>|<p>|<\/p>)/img, "");
 
             //create model instance and store to collection
-            var newOrder = new Order({name: newName, food: modFood, id: globalCounter});
+            var newOrder = new Order({name: newName, food: modFood, postId: postId, modelId: globalCounter});
             globalCounter++;
 
             bill.add(newOrder);  //hardcoded collection to store
@@ -72,13 +73,13 @@ PostsView = Backbone.View.extend({
         for (var i = 0; i < bill.length; i++){
             var tempModel = bill.at(i);
             console.log(tempModel.attributes);
-            $("#post").append("<div class='order' id=" + tempModel.get("id") + ">" + tempModel.get("name") + " wants " + tempModel.get("food") + "<button class='delete'>Delete</button></div><br>");
+            $("#post").append("<div class='order' id=" + tempModel.get("modelId") + ">" + tempModel.get("name") + " wants " + tempModel.get("food") + "<button class='delete'>Delete</button></div><br>");
         }
     },
 
     renderLast: function(){
         var tempModel = bill.at(bill.length-1);
-        $("#post").append("<div class='order' id=" + tempModel.get("id") + ">" + tempModel.get("name") + " wants " + tempModel.get("food") + "<button class='delete'>Delete</button></div><br>");
+        $("#post").append("<div class='order' id=" + tempModel.get("modelId") + ">" + tempModel.get("name") + " wants " + tempModel.get("food"));
     },
 
     refresh: function(){
@@ -108,7 +109,7 @@ PostsView = Backbone.View.extend({
 
         //send model to WP POST
         $.ajax({
-            url: 'http://jl46.x10host.com/wp-json/wp/v2/posts?shortcode=user-submitted-posts',
+            url: 'http://jl46.x10host.com/wp-json/wp/v2/posts',
             headers: {
                 'Authorization':'Basic am9uYXRoYW5sZWU0NkBnbWFpbC5jb206R2YxWiBBZDNMIGh0MXQgOElNdQ=='
             },
@@ -122,15 +123,31 @@ PostsView = Backbone.View.extend({
 
         console.log("saving " + submitOrder.get("name") + ", " + submitOrder.get("food") + " to collection");
     },
-    removeOrder: function(id){
-        var orderId = id;
-        console.log("removing " + orderId);
+    removeOrder: function(divId){
+        var modelId = divId;
+        console.log("removing " + modelId);
+
+        var postId = bill.at(modelId).get("postId").toString();
+        console.log(postId);
+
+        var postUrl = "http://jl46.x10host.com/wp-json/wp/v2/posts/" + postId;
+        console.log(postUrl);
 
         //remove order from wordpress
-
+        $.ajax({
+                url: postUrl,
+                headers: {
+                    'Authorization':'Basic am9uYXRoYW5sZWU0NkBnbWFpbC5jb206R2YxWiBBZDNMIGh0MXQgOElNdQ=='
+                },
+                type: 'delete',
+                data: {},
+                success: function (data) {
+                    console.log("post deleted");
+                }
+        });
 
         //remove order model from collection
-        bill.remove(bill.at(orderId));
+        bill.remove(bill.at(modelId));
         // bill.print();
     },
 
