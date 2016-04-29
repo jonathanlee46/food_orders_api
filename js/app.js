@@ -22,15 +22,28 @@ Order = Backbone.Model.extend({
             var newName = postArray[i]["title"]["rendered"];  //name
             var newFood = postArray[i]["content"]["rendered"];  //order
             var postId  = postArray[i]["id"]; //WP post id
+            var category = postArray[i]["categories"][0]; //post category
 
-            //remove p tag from the food string
-            var modFood = newFood.replace(/(<p[^>]+?>|<p>|<\/p>)/img, "");
+            //separate menu and orders
+            if (category === 5){
+                //remove p tag from the string
+                var modFood = newFood.replace(/(<p[^>]+?>|<p>|<\/p>)/img, "");
 
-            //create model instance and store to collection
-            var newOrder = new Order({name: newName, food: modFood, postId: postId, modelId: globalCounter});
-            globalCounter++;
+                //create model instance and store to collection
+                var newOrder = new Order({name: newName, menu: modFood, postId: postId});
 
-            bill.add(newOrder);  //hardcoded collection to store
+                menu.add(newOrder);  //hardcoded collection to store
+            }
+            else{
+                //remove p tag from the food string
+                var modFood = newFood.replace(/(<p[^>]+?>|<p>|<\/p>)/img, "");
+
+                //create model instance and store to collection
+                var newOrder = new Order({name: newName, food: modFood, postId: postId, modelId: globalCounter});
+                globalCounter++;
+
+                bill.add(newOrder);  //hardcoded collection to store
+            }
         }
     },
 });
@@ -66,20 +79,44 @@ PostsView = Backbone.View.extend({
         //test to see if collection populated
         console.log("number of orders on the bill is " + bill.length);
 
-        //wipe the Loading... text
-        $("#post").empty();
+        //wipe the loading text for menu
+        if (menu.at(0)){
 
-        //print contents to html
+
+        var menuModel = menu.at(0);
+
+        $("#menu-board").empty();
+
+        //print menu to menu board
+
+        var restName = menuModel.get("name");
+        var menuUrl = menuModel.get("menu");
+        $("#menu-board").append("Today we'll be eating at " + "<a href='" + menuUrl + "' target='_blank'>" + restName + "!</a> <button class='delete'>Delete</button></div><br>"); //implants menu URL into the link, target=_blank opens a new tab on click
+
+}
+        //wipe the Loading... text for orders
+        $("#order-board").empty();
+
+        //print orders to orders board
         for (var i = 0; i < bill.length; i++){
             var tempModel = bill.at(i);
             console.log(tempModel.attributes);
-            $("#post").append("<div class='order' id=" + tempModel.get("modelId") + ">" + tempModel.get("name") + " wants " + tempModel.get("food") + "<button class='delete'>Delete</button></div><br>");
+            $("#order-board").append("<div class='order' id=" + tempModel.get("modelId") + ">" + tempModel.get("name") + " wants " + tempModel.get("food") + "<button class='delete'>Delete</button></div><br>");
         }
     },
 
-    renderLast: function(){
+    renderLastOrder: function(){
         var tempModel = bill.at(bill.length-1);
-        $("#post").append("<div class='order' id=" + tempModel.get("modelId") + ">" + tempModel.get("name") + " wants " + tempModel.get("food"));
+        $("#order-board").append("<div class='order' id=" + tempModel.get("modelId") + ">" + tempModel.get("name") + " wants " + tempModel.get("food"));
+    },
+
+    renderLastMenu: function(){
+        var tempModel = menu.at(0);
+        $("#menu-board").empty();
+
+        var restName = tempModel.get("name");
+        var menuUrl = tempModel.get("menu");
+        $("#menu-board").append("Today we'll be eating at " + "<a href='" + menuUrl + "' target='_blank'>" + restName + "!</a> <button class='delete'>Delete</button></div>");
     },
 
     refresh: function(){
@@ -96,8 +133,33 @@ PostsView = Backbone.View.extend({
         });
     },
 
-    //when the submit button is clicked:
-    submitAction: function(){
+    //when the menu submit button is clicked:
+    submitMenu: function(){
+
+        //target form
+        var inputName = $('#rest-name');
+        var inputUrl = $('#rest-link');
+
+        //create temp model and add to menu collection
+        var submitMenu = new Order({name: inputName.val(), menu: inputUrl.val()});
+        menu.add(submitMenu);
+
+        //send model to WP POST
+        $.ajax({
+                url: 'http://jl46.x10host.com/wp-json/wp/v2/posts',
+                headers: {
+                    'Authorization':'Basic am9uYXRoYW5sZWU0NkBnbWFpbC5jb206R2YxWiBBZDNMIGh0MXQgOElNdQ=='
+                },
+                type: 'POST',
+                data: {"title":inputName.val(), "content": inputUrl.val(), "categories": [5]}, 
+                success: function (data) {
+                    console.log("Successfully posted to backend");
+                }
+            });
+    },
+
+    //when the order submit button is clicked:
+    submitOrder: function(){
 
         //target form button
         var inputName = $('#new-name');
@@ -150,12 +212,30 @@ PostsView = Backbone.View.extend({
         bill.remove(bill.at(modelId));
         // bill.print();
     },
+    removeMenu: function(){
+        var postId = menu.at(0).get("postId").toString();
+        var postUrl = "http://jl46.x10host.com/wp-json/wp/v2/posts/" + postId;
+
+        //remove order from wordpress
+        $.ajax({
+                url: postUrl,
+                headers: {
+                    'Authorization':'Basic am9uYXRoYW5sZWU0NkBnbWFpbC5jb206R2YxWiBBZDNMIGh0MXQgOElNdQ=='
+                },
+                type: 'delete',
+                data: {},
+                success: function (data) {
+                    console.log("post deleted");
+                }
+        });
+    },
 
     
 });
 
 //instances on load
 var bill = new OrderCollection();
+var menu = new OrderCollection();
 var initialOrder = new Order();
 
 var app = new PostsView({
@@ -167,11 +247,17 @@ var app = new PostsView({
 
 
 //event handling
-$('.submit-new').click(function(e){
+$('.submit-menu').click(function(e){
     e.preventDefault();
 
-    app.submitAction();
-    app.renderLast();
+    app.submitMenu();
+    app.renderLastMenu();
+})
+$('.submit-order').click(function(e){
+    e.preventDefault();
+
+    app.submitOrder();
+    app.renderLastOrder();
 })
 $('.refresh-list').click(function(e){
     e.preventDefault();
@@ -181,7 +267,7 @@ $('.refresh-list').click(function(e){
     app.model = newOrder;
     app.render();
 })
-$('.order-board').on('click', '.delete', function(e){
+$('#order-board').on('click', '.delete', function(e){
     e.preventDefault();
     
     //remove the order from DOM
@@ -190,6 +276,15 @@ $('.order-board').on('click', '.delete', function(e){
 
     //remove the order from collection and backend
     app.removeOrder(divId);
+})
+$('#menu-board').on('click', '.delete', function(e){
+    e.preventDefault();
+
+    var divId = $(this).closest("div").attr("id");  
+    $("#menu-board").empty();
+    $("#menu-board").html("Deleted.  Add a new menu above!");
+
+    app.removeMenu();
 })
 
 console.log("app.js end");
