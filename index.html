@@ -5,15 +5,27 @@
         <link rel="stylesheet" type="text/css" href="css/styles.css" />
     </head>
     <body>
-    
-        FOOD!<br>
-        Please refresh if you want to delete newly added orders.<br>
 
-        <input class="new-name" id="new-name" placeholder="Enter your name" autofocus>
+        FOOD!<br>
+        Please refresh if you want to delete newly added orders.<br><br>
+        Enter a new restaurant here:<br>
+
+        <input id="rest-name" placeholder="Enter restaurant name">
+        <input id="rest-link" placeholder="URL to restaurant site">
+        <button class="submit-rest">Submit</button>
+
+        <div class="rest-board">
+            <p id="rest"> Loading...</p>
+        </div>
+
+        <br><br>
+
+        ORDER HERE!<br>
+
+        <input id="new-name" placeholder="Enter your name" autofocus>
         <input id="new-food" placeholder="Enter your order">
         <button class="submit-new">Submit</button>
         <br>
-        <!-- <button class="refresh-list">Refresh</button> -->
 
         <div class="order-board">
             <p id="post"> Loading...</p>
