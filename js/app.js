@@ -46,6 +46,18 @@ Order = Backbone.Model.extend({
             }
         }
     },
+    getName: function(){
+        return this.get("name");
+    },
+    getFood: function(){
+        return this.get("food");
+    },
+    getPostId: function(){
+        return this.get("postId");
+    },
+    getModelId: function(){
+        return this.get("modelId");
+    },
 });
 
 // Define the collection
@@ -54,7 +66,7 @@ OrderCollection = Backbone.Collection.extend({
     print: function(){
         for (var i = 0; i < this.length; i++){
             var tempModel = bill.at(i);
-            console.log(tempModel.get("name"));
+            console.log(tempModel.getName());
         }
     },
 })
@@ -89,7 +101,7 @@ PostsView = Backbone.View.extend({
 
         //print menu to menu board
 
-        var restName = menuModel.get("name");
+        var restName = menuModel.getName();
         var menuUrl = menuModel.get("menu");
         $("#menu-board").append("Today we'll be eating at " + "<a href='" + menuUrl + "' target='_blank'>" + restName + "!</a> <button class='delete'>Delete</button></div><br>"); //implants menu URL into the link, target=_blank opens a new tab on click
 
@@ -101,7 +113,7 @@ PostsView = Backbone.View.extend({
         for (var i = 0; i < bill.length; i++){
             var tempModel = bill.at(i);
             console.log(tempModel.attributes);
-            $("#order-board").append("<div class='order' id=" + tempModel.get("modelId") + ">" + tempModel.get("name") + " wants " + tempModel.get("food") + "<button class='delete'>Delete</button></div><br>");
+            $("#order-board").append("<div class='order' id=" + tempModel.get("modelId") + ">" + tempModel.getName() + " wants " + tempModel.getFood() + "<button class='delete'>Delete</button></div><br>");
         }
     },
 
