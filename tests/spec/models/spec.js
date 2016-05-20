@@ -37,37 +37,66 @@ describe('Order Model', function() {
 		});
 	});
 
-	describe('when it fetches', function() {
-		var order;
+	// describe('when it fetches', function() {
+	// 	var order;
 
-		beforeEach(function() {
-			// spyOn($, 'ajax').andCallFake(function(options) {
-			// 	options.success(MOCK_GET_DATA);
-			// });
+	// 	beforeEach(function() {
+	// 		spyOn($, 'ajax').andCallFake(function(options) {
+	// 			options.success(MOCK_GET_DATA);
+	// 		});
 
-			order = new Order();
-			order.fetch();
-		});
+	// 		order = new Order();
+	// 		order.fetch();
+	// 	});
 
-		afterEach(function() {
-			order = undefined;
-		});
+	// 	afterEach(function() {
+	// 		order = undefined;
+	// 	});
 
-		it('should call through to .ajax with proper params', function() {
-			var ajaxCallParams = $.ajax.mostRecentCall.args[0];
+	// 	it('should call through to .ajax with proper params', function() {
+	// 		var ajaxCallParams = $.ajax.mostRecentCall.args[0];
 
-			expect(ajaxCallParams.dataType).toEqual('json');
-			expect(ajaxCallParams.type).toEqual('GET');
-			expect(ajaxCallParams.success).toBeDefined();
-		});
+	// 		expect(ajaxCallParams.dataType).toEqual('json');
+	// 		expect(ajaxCallParams.type).toEqual('GET');
+	// 		expect(ajaxCallParams.success).toBeDefined();
+	// 	});
 
-		it('should be able to parse mocked service response', function() {
-			expect(_.isEmpty(order.attributes)).toEqual(false);
-			expect(order.get('name')).toEqual('Jack');
-			expect(order.get('food')).toEqual('Cheese');
-			expect(order.get('postId')).toEqual(24);
-			expect(order.get('modelId')).toEqual(1);
-		});
+	// 	it('should be able to parse mocked service response', function() {
+	// 		expect(_.isEmpty(order.attributes)).toEqual(false);
+	// 		expect(order.get('name')).toEqual('Jack');
+	// 		expect(order.get('food')).toEqual('Cheese');
+	// 		expect(order.get('postId')).toEqual(24);
+	// 		expect(order.get('modelId')).toEqual(1);
+	// 	});
+	// });
+
+});
+
+describe('Bill Collection', function() {
+	var MOCK_GET_DATA = {
+		name: 'Jack',
+    food: 'Cheese',
+    postId: 24,
+    modelId: 1,
+	};
+
+	var MOCK_POST_DATA = {
+		success: true
+	};
+
+	it('should be able to create its application test objects', function() {
+		var testBill = new OrderCollection();
+		var testModel = new Order();
+		expect(testBill).toBeDefined();
+		expect(testModel).toBeDefined();
+		expect(MOCK_GET_DATA).toBeDefined();
+		expect(MOCK_POST_DATA).toBeDefined();
 	});
 
+	it('should be able to save a model', function() {
+		var testBill = new OrderCollection();
+		var testModel = new Order();
+		testBill.add(testModel);
+		expect(testBill.at(0)).toBeDefined();
+	});
 });
