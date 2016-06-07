@@ -299,4 +299,4 @@ $('#menu-board').on('click', '.delete', function(e){
     app.removeMenu();
 })
 
-console.log("app.js end");
+console.log("app.js end"); //test
